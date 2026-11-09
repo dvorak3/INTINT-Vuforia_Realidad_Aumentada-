@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     name: Build Unity iOS Project
-    runs-on: macos-14
+    runs-on: macos-latest
     steps:
       # 1. Descargar el código con Git LFS
       - name: Checkout repository
