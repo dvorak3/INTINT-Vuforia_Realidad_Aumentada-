@@ -2,49 +2,22 @@ name: Build iOS Unsigned IPA
 
 on:
   push:
-    branches:
-      - main  # o 'master', cambia según el nombre de tu rama principal
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
   build:
-    name: Build Unity iOS Project
+    name: Build iOS (unsigned)
     runs-on: macos-latest
     steps:
-      # 1. Descargar el código con Git LFS
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           lfs: true
 
-      # 2. Descargar e instalar Git LFS
-      - name: Git LFS Pull
-        run: |
-          git lfs pull
-
-      # 3. Cachear la carpeta Library para acelerar futuros builds
-      - name: Cache Unity Library
-        uses: actions/cache@v3
-        with:
-          path: Library
-          key: Library-iOS-${{ hashFiles('Assets/**', 'Packages/**') }}
-          restore-keys: |
-            Library-iOS-
-
-      # 4. Generar el proyecto de Xcode con GameCI
-      - name: Build Unity iOS Project
-        uses: game-ci/unity-builder@v4
-        env:
-          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
-          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-        with:
-          targetPlatform: iOS
-          buildName: AR_Practica6
-          buildsPath: build/iOS
-
-      # 5. Compilar el proyecto de Xcode a .app sin firma de Apple
       - name: Build Xcode Project (Unsigned)
         run: |
-          cd build/iOS
+          cd XcodeProject
           xcodebuild -project Unity-iPhone.xcodeproj \
                      -scheme Unity-iPhone \
                      -configuration Release \
@@ -54,17 +27,14 @@ jobs:
                      CODE_SIGN_IDENTITY="" \
                      clean archive -archivePath ./Unity-iPhone.xcarchive
 
-      # 6. Empaquetar el archivo .app en un contenedor .ipa
       - name: Generate .ipa file
         run: |
-          mkdir -p build/iOS/Payload
-          cp -r build/iOS/Unity-iPhone.xcarchive/Products/Applications/Unity-iPhone.app build/iOS/Payload/
-          cd build/iOS
+          mkdir -p Payload
+          cp -r XcodeProject/Unity-iPhone.xcarchive/Products/Applications/*.app Payload/
           zip -r AR_Practica6.ipa Payload
 
-      # 7. Subir el .ipa como artefacto descargable en GitHub
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
         with:
           name: AR_Practica6_iOS_Unsigned
-          path: build/iOS/AR_Practica6.ipa
+          path: AR_Practica6.ipa
