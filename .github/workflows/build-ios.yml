@@ -2,22 +2,51 @@ name: Build iOS Unsigned IPA
 
 on:
   push:
-    branches: [main]
-  workflow_dispatch:
+    branches:
+      - main  # Cambia a 'master' si tu rama principal se llama así
+  workflow_dispatch:  # Permite ejecutar la compilación manualmente desde GitHub Actions
 
 jobs:
   build:
-    name: Build iOS (unsigned)
+    name: Build Unity iOS Project
     runs-on: macos-latest
     steps:
+      # 1. Descargar el código fuente asegurando el uso de Git LFS
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           lfs: true
 
+      # 2. Descargar los archivos pesados de Git LFS (modelos 3D y texturas)
+      - name: Git LFS Pull
+        run: |
+          git lfs pull
+
+      # 3. Cachear la carpeta Library para agilizar futuras compilaciones
+      - name: Cache Unity Library
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-iOS-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-iOS-
+
+      # 4. Exportar el proyecto de Xcode desde Unity mediante GameCI
+      - name: Build Unity iOS Project
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: iOS
+          buildName: AR_Practica6
+          buildsPath: build/iOS
+
+      # 5. Compilar el proyecto Xcode a ejecutable .app sin firma de desarrollador
       - name: Build Xcode Project (Unsigned)
         run: |
-          cd XcodeProject
+          cd build/iOS
           xcodebuild -project Unity-iPhone.xcodeproj \
                      -scheme Unity-iPhone \
                      -configuration Release \
@@ -27,14 +56,17 @@ jobs:
                      CODE_SIGN_IDENTITY="" \
                      clean archive -archivePath ./Unity-iPhone.xcarchive
 
+      # 6. Crear la estructura de directorio Payload y comprimir en archivo .ipa
       - name: Generate .ipa file
         run: |
-          mkdir -p Payload
-          cp -r XcodeProject/Unity-iPhone.xcarchive/Products/Applications/*.app Payload/
+          mkdir -p build/iOS/Payload
+          cp -r build/iOS/Unity-iPhone.xcarchive/Products/Applications/Unity-iPhone.app build/iOS/Payload/
+          cd build/iOS
           zip -r AR_Practica6.ipa Payload
 
+      # 7. Subir el ejecutable .ipa a los Artefactos descargables del workflow
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
         with:
           name: AR_Practica6_iOS_Unsigned
-          path: AR_Practica6.ipa
+          path: build/iOS/AR_Practica6.ipa
