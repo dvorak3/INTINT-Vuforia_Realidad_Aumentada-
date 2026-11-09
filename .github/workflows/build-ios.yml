@@ -42,21 +42,26 @@ jobs:
           targetPlatform: iOS
           buildName: AR_Practica6
           buildsPath: build/iOS
-        # 5. Compilar el proyecto Xcode a ejecutable .app sin firma de desarrollador
+# 5. Compilar el proyecto Xcode a ejecutable .app sin firma de desarrollador
       - name: Build Xcode Project (Unsigned)
         run: |
           XCODE_PROJ_PATH=$(find build/iOS -name "Unity-iPhone.xcodeproj" -type d | head -n 1)
           XCODE_DIR=$(dirname "$XCODE_PROJ_PATH")
-          echo "Proyecto encontrado en: $XCODE_DIR"
+          echo "Proyecto Xcode encontrado en: $XCODE_DIR"
           cd "$XCODE_DIR"
+          
           xcodebuild -project Unity-iPhone.xcodeproj \
                      -scheme Unity-iPhone \
                      -configuration Release \
                      -sdk iphoneos \
+                     -destination 'generic/platform=iOS' \
+                     SYMROOT="$XCODE_DIR/build" \
+                     OBJROOT="$XCODE_DIR/build/obj" \
                      CODE_SIGNING_ALLOWED=NO \
                      CODE_SIGNING_REQUIRED=NO \
                      CODE_SIGN_IDENTITY="" \
-                     clean archive -archivePath ./Unity-iPhone.xcarchive
+                     AD_HOC_CODE_SIGNING_ALLOWED=YES \
+                     clean build
 
       # 6. Crear la estructura de directorio Payload y comprimir en archivo .ipa
       - name: Generate .ipa file
@@ -64,9 +69,12 @@ jobs:
           XCODE_PROJ_PATH=$(find build/iOS -name "Unity-iPhone.xcodeproj" -type d | head -n 1)
           XCODE_DIR=$(dirname "$XCODE_PROJ_PATH")
           cd "$XCODE_DIR"
+          
           mkdir -p Payload
-          cp -r Unity-iPhone.xcarchive/Products/Applications/Unity-iPhone.app Payload/
+          cp -r build/Release-iphoneos/Unity-iPhone.app Payload/
           zip -r AR_Practica6.ipa Payload
+          
+          mkdir -p "$GITHUB_WORKSPACE/build/iOS"
           cp AR_Practica6.ipa "$GITHUB_WORKSPACE/build/iOS/"
 
       # 7. Subir el ejecutable .ipa a los Artefactos descargables del workflow
