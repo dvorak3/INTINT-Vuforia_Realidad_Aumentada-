@@ -50,7 +50,6 @@ jobs:
           echo "Proyecto Xcode en: $XCODE_DIR"
           cd "$XCODE_DIR"
           
-          # Limpiar residuos y DerivedData previas
           rm -rf DerivedData build
           
           xcodebuild -project Unity-iPhone.xcodeproj \
@@ -58,6 +57,7 @@ jobs:
                      -configuration Release \
                      -sdk iphoneos \
                      -derivedDataPath ./DerivedData \
+                     PRODUCT_NAME="AR_Practica6" \
                      CODE_SIGNING_ALLOWED=NO \
                      CODE_SIGNING_REQUIRED=NO \
                      CODE_SIGN_IDENTITY="" \
@@ -71,7 +71,6 @@ jobs:
           XCODE_DIR=$(dirname "$XCODE_PROJ_PATH")
           cd "$XCODE_DIR"
           
-          # Buscar automáticamente el bundle .app generado
           APP_PATH=$(find ./DerivedData -name "*.app" -type d | head -n 1)
           echo "Aplicación encontrada en: $APP_PATH"
           
