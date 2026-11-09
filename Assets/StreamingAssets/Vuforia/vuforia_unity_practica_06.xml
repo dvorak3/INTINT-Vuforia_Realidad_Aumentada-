@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<QCARConfig>
+  <Tracking>
+    <ImageTarget name="pokemon" size="1.000000 1.406832" />
+    <ImageTarget name="astronaut" size="1.000000 1.728516" />
+  </Tracking>
+</QCARConfig>
