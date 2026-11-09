@@ -42,11 +42,13 @@ jobs:
           targetPlatform: iOS
           buildName: AR_Practica6
           buildsPath: build/iOS
-
-      # 5. Compilar el proyecto Xcode a ejecutable .app sin firma de desarrollador
+        # 5. Compilar el proyecto Xcode a ejecutable .app sin firma de desarrollador
       - name: Build Xcode Project (Unsigned)
         run: |
-          cd build/iOS
+          XCODE_PROJ_PATH=$(find build/iOS -name "Unity-iPhone.xcodeproj" -type d | head -n 1)
+          XCODE_DIR=$(dirname "$XCODE_PROJ_PATH")
+          echo "Proyecto encontrado en: $XCODE_DIR"
+          cd "$XCODE_DIR"
           xcodebuild -project Unity-iPhone.xcodeproj \
                      -scheme Unity-iPhone \
                      -configuration Release \
@@ -59,10 +61,13 @@ jobs:
       # 6. Crear la estructura de directorio Payload y comprimir en archivo .ipa
       - name: Generate .ipa file
         run: |
-          mkdir -p build/iOS/Payload
-          cp -r build/iOS/Unity-iPhone.xcarchive/Products/Applications/Unity-iPhone.app build/iOS/Payload/
-          cd build/iOS
+          XCODE_PROJ_PATH=$(find build/iOS -name "Unity-iPhone.xcodeproj" -type d | head -n 1)
+          XCODE_DIR=$(dirname "$XCODE_PROJ_PATH")
+          cd "$XCODE_DIR"
+          mkdir -p Payload
+          cp -r Unity-iPhone.xcarchive/Products/Applications/Unity-iPhone.app Payload/
           zip -r AR_Practica6.ipa Payload
+          cp AR_Practica6.ipa "$GITHUB_WORKSPACE/build/iOS/"
 
       # 7. Subir el ejecutable .ipa a los Artefactos descargables del workflow
       - name: Upload IPA Artifact
