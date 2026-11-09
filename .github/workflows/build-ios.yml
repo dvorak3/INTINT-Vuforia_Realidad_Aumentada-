@@ -42,36 +42,41 @@ jobs:
           targetPlatform: iOS
           buildName: AR_Practica6
           buildsPath: build/iOS
-# 5. Compilar el proyecto Xcode a ejecutable .app sin firma de desarrollador
+      # 5. Compilar el proyecto Xcode a ejecutable .app sin firma de desarrollador
       - name: Build Xcode Project (Unsigned)
         run: |
           XCODE_PROJ_PATH=$(find build/iOS -name "Unity-iPhone.xcodeproj" -type d | head -n 1)
           XCODE_DIR=$(dirname "$XCODE_PROJ_PATH")
-          echo "Proyecto Xcode encontrado en: $XCODE_DIR"
+          echo "Proyecto Xcode en: $XCODE_DIR"
           cd "$XCODE_DIR"
+          
+          # Limpiar residuos y DerivedData previas
+          rm -rf DerivedData build
           
           xcodebuild -project Unity-iPhone.xcodeproj \
                      -scheme Unity-iPhone \
                      -configuration Release \
                      -sdk iphoneos \
-                     -destination 'generic/platform=iOS' \
-                     SYMROOT="$XCODE_DIR/build" \
-                     OBJROOT="$XCODE_DIR/build/obj" \
+                     -derivedDataPath ./DerivedData \
                      CODE_SIGNING_ALLOWED=NO \
                      CODE_SIGNING_REQUIRED=NO \
                      CODE_SIGN_IDENTITY="" \
                      AD_HOC_CODE_SIGNING_ALLOWED=YES \
                      clean build
 
-      # 6. Crear la estructura de directorio Payload y comprimir en archivo .ipa
+      # 6. Localizar el ejecutable .app, crear Payload y comprimir en .ipa
       - name: Generate .ipa file
         run: |
           XCODE_PROJ_PATH=$(find build/iOS -name "Unity-iPhone.xcodeproj" -type d | head -n 1)
           XCODE_DIR=$(dirname "$XCODE_PROJ_PATH")
           cd "$XCODE_DIR"
           
+          # Buscar automáticamente el bundle .app generado
+          APP_PATH=$(find ./DerivedData -name "*.app" -type d | head -n 1)
+          echo "Aplicación encontrada en: $APP_PATH"
+          
           mkdir -p Payload
-          cp -r build/Release-iphoneos/Unity-iPhone.app Payload/
+          cp -r "$APP_PATH" Payload/
           zip -r AR_Practica6.ipa Payload
           
           mkdir -p "$GITHUB_WORKSPACE/build/iOS"
