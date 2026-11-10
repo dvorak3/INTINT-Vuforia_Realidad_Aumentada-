@@ -6,9 +6,9 @@ Aplicación de realidad aumentada para iOS que reconoce dos imágenes y muestra 
 
 ## Demostración
 
-[Ver el vídeo de demostración](video_demostracion.mp4)
+[![Demostración de la app en un iPhone](video_demostracion.gif)](video_demostracion.mp4)
 
-El vídeo es una grabación de pantalla de un iPhone: la app detecta cada imagen, muestra su modelo 3D y lo oculta cuando la imagen sale del encuadre.
+Haz clic en la animación para ver el [vídeo completo](video_demostracion.mp4). El vídeo es una grabación de pantalla de un iPhone: la app detecta cada imagen, muestra su modelo 3D y lo oculta cuando la imagen sale del encuadre.
 
 ## Qué hace la app
 
@@ -79,6 +79,7 @@ Con un Apple ID gratuito la app caduca a los 7 días y hay que reinstalarla.
 ├── Packages/                         Incluye el paquete de Vuforia (Git LFS)
 ├── ProjectSettings/
 ├── video_demostracion.mp4
+├── video_demostracion.gif
 └── README.md
 ```
 
