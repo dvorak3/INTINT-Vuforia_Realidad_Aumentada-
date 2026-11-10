@@ -42,7 +42,7 @@ jobs:
           targetPlatform: iOS
           buildName: AR_Practica6
           buildsPath: build/iOS
-      # 5. Compilar el proyecto Xcode a ejecutable .app sin firma de desarrollador
+# 5. Compilar el proyecto Xcode a ejecutable .app sin firma de desarrollador
       - name: Build Xcode Project (Unsigned)
         run: |
           XCODE_PROJ_PATH=$(find build/iOS -name "Unity-iPhone.xcodeproj" -type d | head -n 1)
@@ -50,14 +50,17 @@ jobs:
           echo "Proyecto Xcode en: $XCODE_DIR"
           cd "$XCODE_DIR"
           
+          # Limpiar residuos previas
           rm -rf DerivedData build
+          
+          # Renombrar solo la app principal en el project.pbxproj para evitar conflictos con Vuforia y no alterar UnityFramework
+          perl -pi -e 's/PRODUCT_NAME = "?vuforia"?;/PRODUCT_NAME = AR_Practica6;/g' Unity-iPhone.xcodeproj/project.pbxproj
           
           xcodebuild -project Unity-iPhone.xcodeproj \
                      -scheme Unity-iPhone \
                      -configuration Release \
                      -sdk iphoneos \
                      -derivedDataPath ./DerivedData \
-                     PRODUCT_NAME="AR_Practica6" \
                      CODE_SIGNING_ALLOWED=NO \
                      CODE_SIGNING_REQUIRED=NO \
                      CODE_SIGN_IDENTITY="" \
